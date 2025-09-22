@@ -1,0 +1,20 @@
+services:
+  central-database:
+    extends:
+      file: platform/database/compose.yaml
+      service: central-database
+    environment:
+      POSTGRES_PASSWORD: superSecurePassword
+      POSTGRES_USER: postgres
+    ports:
+      - '5432:5432'
+
+  company-database:
+    extends:
+      file: platform/database/compose.yaml
+      service: company-database
+    environment:
+      POSTGRES_PASSWORD: superSecurePassword
+      POSTGRES_USER: postgres
+    ports:
+      - '5433:5432'

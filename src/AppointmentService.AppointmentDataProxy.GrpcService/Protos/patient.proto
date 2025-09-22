@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package appointment_data_proxy.patient;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "Protos/common.proto";
+
+message Patient {
+  string insurance_number = 1;
+  string name = 2;
+  int32 age = 3;
+}
+
+message PatientFilter {
+  optional appointment_data_proxy.common.StringFilter insurance_number = 1;
+  optional appointment_data_proxy.common.StringFilter name = 2;
+  optional appointment_data_proxy.common.Int32Filter age = 3;
+}
+
+message GetPatientRequest {
+  optional string insurance_number = 1;
+}
+
+message ListPatientsRequest {
+  optional PatientFilter filter = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+message StreamPatientsRequest { optional PatientFilter filter = 1; }
+
+message CreatePatientRequest { Patient patient = 1; }
+message UpdatePatientRequest { Patient patient = 1; }
+message DeletePatientRequest { string insurance_number = 1; }
+
+message GetPatientResponse { Patient patient = 1; }
+message ListPatientsResponse {
+  repeated Patient patients = 1;
+  string next_page_token = 2;
+}
+
+message CreatePatientResponse {}
+message UpdatePatientResponse {}
+message DeletePatientResponse {}
+
+service PatientService {
+  rpc Get(GetPatientRequest) returns (GetPatientResponse);
+  rpc List(ListPatientsRequest) returns (ListPatientsResponse);
+  rpc Stream(StreamPatientsRequest) returns (stream Patient);
+
+  rpc Create(CreatePatientRequest) returns (CreatePatientResponse);
+  rpc Update(UpdatePatientRequest) returns (UpdatePatientResponse);
+  rpc Delete(DeletePatientRequest) returns (DeletePatientResponse);
+}

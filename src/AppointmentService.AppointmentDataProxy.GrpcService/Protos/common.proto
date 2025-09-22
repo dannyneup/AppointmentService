@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package appointment_data_proxy.common;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "google/protobuf/timestamp.proto";
+
+message Int32Filter {
+  optional int32 equals = 1;
+  repeated int32 in = 2;
+  repeated int32 not_in = 3;
+  optional int32 min = 4;
+  optional int32 max = 5;
+}
+
+message StringFilter {
+  optional string equals = 1;
+  repeated string in = 2;
+  repeated string not_in = 3;
+  optional string contains = 4;
+  optional string starts_with = 5;
+  optional string ends_with = 6;
+  optional bool case_insensitive = 7;
+}
+
+message GoogleTimestampFilter {
+  optional google.protobuf.Timestamp equals = 1;
+  repeated google.protobuf.Timestamp in = 2;
+  repeated google.protobuf.Timestamp not_in = 3;
+  optional google.protobuf.Timestamp before = 4;
+  optional google.protobuf.Timestamp after = 5;
+}

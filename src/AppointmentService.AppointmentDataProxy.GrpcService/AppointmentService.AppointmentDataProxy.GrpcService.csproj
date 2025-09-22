@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.64.0"/>
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.66.1" PrivateAssets="All" />
+        <PackageReference Include="Dapper" Version="2.1.35" />
+        <PackageReference Include="Npgsql" Version="8.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="..\..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Protobuf Include="Protos/*.proto" GrpcServices="Server"/>
+        <Protobuf Update="Protos\practice.proto">
+          <Access>Public</Access>
+          <ProtoCompile>True</ProtoCompile>
+          <CompileOutputs>True</CompileOutputs>
+          <OutputDir>obj\Debug/net9.0/</OutputDir>
+        </Protobuf>
+        <Protobuf Update="Protos\fixedRemedy.proto">
+          <Access>Public</Access>
+          <ProtoCompile>True</ProtoCompile>
+          <CompileOutputs>True</CompileOutputs>
+          <OutputDir>obj/Debug/net9.0/</OutputDir>
+        </Protobuf>
+        <Protobuf Update="Protos\individualRemedy.proto">
+          <Access>Public</Access>
+          <ProtoCompile>True</ProtoCompile>
+          <CompileOutputs>True</CompileOutputs>
+          <OutputDir>obj/Debug/net9.0/</OutputDir>
+        </Protobuf>
+        <Protobuf Update="Protos\appointment.proto">
+          <Access>Public</Access>
+          <ProtoCompile>True</ProtoCompile>
+          <CompileOutputs>True</CompileOutputs>
+          <OutputDir>obj\Debug/net9.0/</OutputDir>
+        </Protobuf>
+    </ItemGroup>
+</Project>

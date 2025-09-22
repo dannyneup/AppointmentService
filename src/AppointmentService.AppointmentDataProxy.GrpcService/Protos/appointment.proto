@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package appointment_data_proxy.appointment;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "Protos/common.proto";
+import "Protos/patient.proto";
+import "Protos/therapist.proto";
+import "Protos/practice.proto";
+import "Protos/fixedRemedy.proto";
+import "Protos/individualRemedy.proto";
+import "google/protobuf/timestamp.proto";
+
+message ExpandedAppointment {
+  int32 id = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  patient.Patient patient = 4;
+  therapist.Therapist therapist = 5;
+  practice.Practice practice = 6;
+  oneof remedy {
+    fixed_remedy.FixedRemedy fixed_remedy = 7;
+    individual_remedy.IndividualRemedy individual_remedy = 8;
+  }
+}
+
+message AppointmentSummary {
+  int32 id = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  string patient_insurance_number = 4;
+  int32 therapist_id = 5;
+  string practice_institution_code = 6;
+  oneof remedy {
+    string fixed_remedy_diagnosis_code = 7;
+    int32 individual_remedy_id = 8;
+  }
+}
+
+message Appointment {
+  oneof result {
+    AppointmentSummary appointmentSummary = 1;
+    ExpandedAppointment expandedAppointment = 2;
+  }
+}
+
+enum AppointmentExpansions{
+  APPOINTMENT_EXPANSIONS_UNSPECIFIED = 0;
+  APPOINTMENT_EXPANSIONS_PATIENT = 1;
+  APPOINTMENT_EXPANSIONS_THERAPIST = 2;
+  APPOINTMENT_EXPANSIONS_PRACTICE = 3;
+  APPOINTMENT_EXPANSIONS_REMEDY = 4;
+}
+
+message AppointmentBaseFilter {
+  optional appointment_data_proxy.common.Int32Filter id = 1;
+  optional appointment_data_proxy.common.GoogleTimestampFilter start = 2;
+  optional appointment_data_proxy.common.GoogleTimestampFilter end = 3;
+  optional appointment_data_proxy.common.Int32Filter therapist_id = 4;
+  optional appointment_data_proxy.common.StringFilter practice_institution_code = 5;
+}
+
+message ExpandedAppointmentFilter {
+  optional appointment_data_proxy.common.Int32Filter id = 1;
+  optional appointment_data_proxy.common.StringFilter patient_insurance_number = 2;
+  optional appointment_data_proxy.therapist.TherapistFilter therapist = 3;
+  optional appointment_data_proxy.practice.PracticeFilter practice = 4;
+  oneof remedy_filter {
+    appointment_data_proxy.common.StringFilter fixed_remedy_diagnosis_code = 5;
+    appointment_data_proxy.individual_remedy.IndividualRemedyFilter individual_remedy = 6;
+  }
+}
+
+message AppointmentFilter {
+  AppointmentBaseFilter base = 1;
+  optional ExpandedAppointmentFilter expanded = 2;
+}
+
+message GetAppointmentRequest {
+  optional int32 id = 1;
+  optional AppointmentExpansions expansions = 2;
+}
+
+message ListAppointmentsRequest {
+  optional AppointmentFilter filter = 1;
+  optional AppointmentExpansions expansions = 2;
+  optional int32 page_size = 3;
+  optional string page_token = 4;
+}
+message StreamAppointmentsRequest {
+  optional AppointmentFilter filter = 1;
+  optional AppointmentExpansions expansions = 2;
+}
+
+message CreateAppointmentRequest { AppointmentSummary appointment = 1; }
+message UpdateAppointmentRequest { AppointmentSummary appointment = 1; }
+message DeleteAppointmentRequest { int32 id = 1; }
+
+message GetAppointmentResponse { Appointment appointment = 1;}
+message ListAppointmentsResponse {
+  repeated Appointment appointments = 1;
+  string next_page_token = 2;
+}
+
+message CreateAppointmentResponse {}
+message UpdateAppointmentResponse {}
+message DeleteAppointmentResponse {}
+
+service AppointmentService {
+  rpc Get(GetAppointmentRequest) returns (GetAppointmentResponse);
+  rpc List(ListAppointmentsRequest) returns (ListAppointmentsResponse);
+  rpc Stream(StreamAppointmentsRequest) returns (stream Appointment);
+
+  rpc Create(CreateAppointmentRequest) returns (CreateAppointmentResponse);
+  rpc Update(UpdateAppointmentRequest) returns (UpdateAppointmentResponse);
+  rpc Delete(DeleteAppointmentRequest) returns (DeleteAppointmentResponse);
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package appointment_data_proxy.individual_remedy;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "Protos/common.proto";
+
+message IndividualRemedy {
+  int32 id = 1;
+  string name = 2;
+}
+
+message IndividualRemedyFilter {
+  optional appointment_data_proxy.common.Int32Filter id = 1;
+  optional appointment_data_proxy.common.StringFilter name = 2;
+}
+
+message GetIndividualRemedyRequest {
+  optional int32 id = 1;
+}
+
+message ListIndividualRemediesRequest {
+  optional IndividualRemedyFilter filter = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+message StreamIndividualRemediesRequest { optional IndividualRemedyFilter filter = 1; }
+
+message CreateIndividualRemedyRequest { IndividualRemedy individual_remedy = 1; }
+message UpdateIndividualRemedyRequest { IndividualRemedy individual_remedy = 1; }
+message DeleteIndividualRemedyRequest { int32 id = 1; }
+
+message GetIndividualRemedyResponse { IndividualRemedy individual_remedy = 1; }
+message ListIndividualRemediesResponse {
+  repeated IndividualRemedy individual_remedies = 1;
+  string next_page_token = 2;
+}
+
+message CreateIndividualRemedyResponse {}
+message UpdateIndividualRemedyResponse {}
+message DeleteIndividualRemedyResponse {}
+
+service IndividualRemedyService {
+  rpc Get(GetIndividualRemedyRequest) returns (GetIndividualRemedyResponse);
+  rpc List(ListIndividualRemediesRequest) returns (ListIndividualRemediesResponse);
+  rpc Stream(StreamIndividualRemediesRequest) returns (stream IndividualRemedy);
+
+  rpc Create(CreateIndividualRemedyRequest) returns (CreateIndividualRemedyResponse);
+  rpc Update(UpdateIndividualRemedyRequest) returns (UpdateIndividualRemedyResponse);
+  rpc Delete(DeleteIndividualRemedyRequest) returns (DeleteIndividualRemedyResponse);
+}

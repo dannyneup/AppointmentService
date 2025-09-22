@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package appointment_data_proxy.fixed_remedy;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "Protos/common.proto";
+
+message FixedRemedy {
+  string diagnosis_code = 1;
+  string name = 2;
+}
+
+message FixedRemedyFilter {
+  optional appointment_data_proxy.common.StringFilter diagnosis_code = 1;
+  optional appointment_data_proxy.common.StringFilter name = 2;
+}
+
+message GetFixedRemedyRequest {
+  optional string diagnosis_code = 1;
+}
+
+message ListFixedRemediesRequest {
+  optional FixedRemedyFilter filter = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+message StreamFixedRemediesRequest { optional FixedRemedyFilter filter = 1; }
+
+message CreateFixedRemedyRequest { FixedRemedy fixed_remedy = 1; }
+message UpdateFixedRemedyRequest { FixedRemedy fixed_remedy = 1; }
+message DeleteFixedRemedyRequest { string diagnosis_code = 1; }
+
+message GetFixedRemedyResponse { FixedRemedy fixed_remedy = 1; }
+message ListFixedRemediesResponse {
+  repeated FixedRemedy fixed_remedies = 1;
+  string next_page_token = 2;
+}
+
+message CreateFixedRemedyResponse {}
+message UpdateFixedRemedyResponse {}
+message DeleteFixedRemedyResponse {}
+
+service FixedRemedyService {
+  rpc Get(GetFixedRemedyRequest) returns (GetFixedRemedyResponse);
+  rpc List(ListFixedRemediesRequest) returns (ListFixedRemediesResponse);
+  rpc Stream(StreamFixedRemediesRequest) returns (stream FixedRemedy);
+
+  rpc Create(CreateFixedRemedyRequest) returns (CreateFixedRemedyResponse);
+  rpc Update(UpdateFixedRemedyRequest) returns (UpdateFixedRemedyResponse);
+  rpc Delete(DeleteFixedRemedyRequest) returns (DeleteFixedRemedyResponse);
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package appointment_data_proxy.therapist;
+
+option csharp_namespace = "AppointmentService.AppointmentDataProxy.GrpcService.Protos";
+
+import "Protos/common.proto";
+
+message Therapist {
+  int32 id = 1;
+  string name = 2;
+}
+
+message TherapistFilter {
+  optional appointment_data_proxy.common.Int32Filter id = 1;
+  optional appointment_data_proxy.common.StringFilter name = 2;
+}
+
+message GetTherapistRequest {
+  optional int32 id = 1;
+}
+
+message ListTherapistsRequest {
+  optional TherapistFilter filter = 1;
+  optional int32 page_size = 2;
+  optional string page_token = 3;
+}
+message StreamTherapistsRequest { optional TherapistFilter filter = 1; }
+
+message CreateTherapistRequest { Therapist therapist = 1; }
+message UpdateTherapistRequest { Therapist therapist = 1; }
+message DeleteTherapistRequest { int32 id = 1; }
+
+message GetTherapistResponse { Therapist therapist = 1; }
+message ListTherapistsResponse {
+  repeated Therapist therapists = 1;
+  string next_page_token = 2;
+}
+
+message CreateTherapistResponse {}
+message UpdateTherapistResponse {}
+message DeleteTherapistResponse {}
+
+service TherapistService {
+  rpc Get(GetTherapistRequest) returns (GetTherapistResponse);
+  rpc List(ListTherapistsRequest) returns (ListTherapistsResponse);
+  rpc Stream(StreamTherapistsRequest) returns (stream Therapist);
+
+  rpc Create(CreateTherapistRequest) returns (CreateTherapistResponse);
+  rpc Update(UpdateTherapistRequest) returns (UpdateTherapistResponse);
+  rpc Delete(DeleteTherapistRequest) returns (DeleteTherapistResponse);
+}
