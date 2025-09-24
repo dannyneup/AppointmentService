@@ -24,7 +24,8 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
             {
                 Patient = patient
             });
-            await AssertSinglePatientInStreamAsync(client, patient);
+            var streamedPatients = await ReadPatientStreamAsync(client);
+            Assert.Single(streamedPatients, patient);
         }
 
         [Fact]
@@ -49,7 +50,8 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
                 Patient = patient
             });
             await client.UpdateAsync(new UpdatePatientRequest { Patient = updatedPatient });
-            await AssertSinglePatientInStreamAsync(client, updatedPatient);
+            var streamedPatients = await ReadPatientStreamAsync(client);
+            Assert.Single(streamedPatients, updatedPatient);
         }
 
         [Fact]
@@ -123,10 +125,12 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
                 Name = "John Doe"
             };
             await client.CreateAsync(new CreatePatientRequest { Patient = patient });
-            await AssertSinglePatientInStreamAsync(client, patient, new PatientFilter{InsuranceNumber = filter});
+            var streamedPatients = await ReadPatientStreamAsync(client, new PatientFilter{InsuranceNumber = filter});
+            var expectedPatients = expected ? [patient] : new List<Patient>();
+            Assert.Equivalent(streamedPatients, expectedPatients);
         }
 
-        private static async Task AssertSinglePatientInStreamAsync(PatientService.PatientServiceClient client, Patient patient, PatientFilter? filter = null)
+        private static async Task<IReadOnlyCollection<Patient>> ReadPatientStreamAsync(PatientService.PatientServiceClient client, PatientFilter? filter = null)
         {
             var request = new StreamPatientsRequest
             {
@@ -138,6 +142,6 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
             {
                 streamedPatients.Add(streamedPatient);
             }
-            Assert.Single(streamedPatients, patient);
+            return streamedPatients;
         }
     }
