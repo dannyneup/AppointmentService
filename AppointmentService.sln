@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentService.AppointmentDataProxy.GrpcService", "src\AppointmentService.AppointmentDataProxy.GrpcService\AppointmentService.AppointmentDataProxy.GrpcService.csproj", "{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests", "AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests\AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.csproj", "{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +19,9 @@ Global
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -16,13 +16,22 @@
     </ItemGroup>
 
     <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>$(AssemblyName).IntegrationTests</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
     </ItemGroup>
     
     <ItemGroup>
-        <Protobuf Include="Protos/*.proto" GrpcServices="Server"/>
+        <Protobuf Include="Protos/*.proto" GrpcServices="Both"/>
         <Protobuf Update="Protos\practice.proto">
           <Access>Public</Access>
           <ProtoCompile>True</ProtoCompile>
