@@ -130,6 +130,40 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
             Assert.Equivalent(streamedPatients, expectedPatients);
         }
 
+        [Theory]
+        [MemberData(nameof(SharedFilterCases.StringCases), MemberType = typeof(SharedFilterCases))]
+        public async Task Stream_WhenFilteredByName_ShouldReturnFilteredPatients(StringFilter filter, string name, bool expected)
+        {
+            var client = new PatientService.PatientServiceClient(Channel);
+
+            var patient = new Patient
+            {
+                InsuranceNumber = "0123",
+                Name = name
+            };
+            await client.CreateAsync(new CreatePatientRequest { Patient = patient });
+            var streamedPatients = await ReadPatientStreamAsync(client, new PatientFilter{Name = filter});
+            var expectedPatients = expected ? [patient] : new List<Patient>();
+            Assert.Equivalent(streamedPatients, expectedPatients);
+        }
+
+        [Theory]
+        [MemberData(nameof(SharedFilterCases.Int32Cases), MemberType = typeof(SharedFilterCases))]
+        public async Task Stream_WhenFilteredByAge_ShouldReturnFilteredPatients(Int32Filter filter, int age, bool expected)
+        {
+            var client = new PatientService.PatientServiceClient(Channel);
+
+            var patient = new Patient
+            {
+                InsuranceNumber = "0123",
+                Age = age
+            };
+            await client.CreateAsync(new CreatePatientRequest { Patient = patient });
+            var streamedPatients = await ReadPatientStreamAsync(client, new PatientFilter{Age = filter});
+            var expectedPatients = expected ? [patient] : new List<Patient>();
+            Assert.Equivalent(streamedPatients, expectedPatients);
+        }
+
         private static async Task<IReadOnlyCollection<Patient>> ReadPatientStreamAsync(PatientService.PatientServiceClient client, PatientFilter? filter = null)
         {
             var request = new StreamPatientsRequest
