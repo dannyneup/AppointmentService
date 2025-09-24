@@ -1,12 +1,20 @@
 
-using AppointmentService.AppointmentDataProxy.GrpcService.Slices;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Slices.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables("AppointmentDataProxy__GrpcService__");
 
-builder.Services.AddGrpc();
-builder.Services.AddGrpcReflection();
+var services = builder.Services;
+services.AddGrpc();
+services.AddGrpcReflection();
+
+services.AddSettings();
+services.AddShared();
+services.AddPatientSlice();
 
 var app = builder.Build();
+app.MapPatientSlice();
 
 if (app.Environment.IsDevelopment())
 {
@@ -14,3 +22,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+public partial class Program;

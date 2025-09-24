@@ -20,11 +20,6 @@ message GetTherapistRequest {
   optional int32 id = 1;
 }
 
-message ListTherapistsRequest {
-  optional TherapistFilter filter = 1;
-  optional int32 page_size = 2;
-  optional string page_token = 3;
-}
 message StreamTherapistsRequest { optional TherapistFilter filter = 1; }
 
 message CreateTherapistRequest { Therapist therapist = 1; }
@@ -32,10 +27,7 @@ message UpdateTherapistRequest { Therapist therapist = 1; }
 message DeleteTherapistRequest { int32 id = 1; }
 
 message GetTherapistResponse { Therapist therapist = 1; }
-message ListTherapistsResponse {
-  repeated Therapist therapists = 1;
-  string next_page_token = 2;
-}
+
 
 message CreateTherapistResponse {}
 message UpdateTherapistResponse {}
@@ -43,7 +35,6 @@ message DeleteTherapistResponse {}
 
 service TherapistService {
   rpc Get(GetTherapistRequest) returns (GetTherapistResponse);
-  rpc List(ListTherapistsRequest) returns (ListTherapistsResponse);
   rpc Stream(StreamTherapistsRequest) returns (stream Therapist);
 
   rpc Create(CreateTherapistRequest) returns (CreateTherapistResponse);

@@ -20,11 +20,6 @@ message GetPracticeRequest {
   optional string institution_code = 1;
 }
 
-message ListPracticesRequest {
-  optional PracticeFilter filter = 1;
-  optional int32 page_size = 2;
-  optional string page_token = 3;
-}
 message StreamPracticesRequest { optional PracticeFilter filter = 1; }
 
 message CreatePracticeRequest { Practice practice = 1; }
@@ -32,10 +27,6 @@ message UpdatePracticeRequest { Practice practice = 1; }
 message DeletePracticeRequest { string institution_code = 1; }
 
 message GetPracticeResponse { Practice practice = 1; }
-message ListPracticesResponse {
-  repeated Practice practices = 1;
-  string next_page_token = 2;
-}
 
 message CreatePracticeResponse {}
 message UpdatePracticeResponse {}
@@ -43,7 +34,6 @@ message DeletePracticeResponse {}
 
 service PracticeService {
   rpc Get(GetPracticeRequest) returns (GetPracticeResponse);
-  rpc List(ListPracticesRequest) returns (ListPracticesResponse);
   rpc Stream(StreamPracticesRequest) returns (stream Practice);
 
   rpc Create(CreatePracticeRequest) returns (CreatePracticeResponse);

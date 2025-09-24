@@ -20,11 +20,6 @@ message GetIndividualRemedyRequest {
   optional int32 id = 1;
 }
 
-message ListIndividualRemediesRequest {
-  optional IndividualRemedyFilter filter = 1;
-  optional int32 page_size = 2;
-  optional string page_token = 3;
-}
 message StreamIndividualRemediesRequest { optional IndividualRemedyFilter filter = 1; }
 
 message CreateIndividualRemedyRequest { IndividualRemedy individual_remedy = 1; }
@@ -32,10 +27,6 @@ message UpdateIndividualRemedyRequest { IndividualRemedy individual_remedy = 1; 
 message DeleteIndividualRemedyRequest { int32 id = 1; }
 
 message GetIndividualRemedyResponse { IndividualRemedy individual_remedy = 1; }
-message ListIndividualRemediesResponse {
-  repeated IndividualRemedy individual_remedies = 1;
-  string next_page_token = 2;
-}
 
 message CreateIndividualRemedyResponse {}
 message UpdateIndividualRemedyResponse {}
@@ -43,7 +34,6 @@ message DeleteIndividualRemedyResponse {}
 
 service IndividualRemedyService {
   rpc Get(GetIndividualRemedyRequest) returns (GetIndividualRemedyResponse);
-  rpc List(ListIndividualRemediesRequest) returns (ListIndividualRemediesResponse);
   rpc Stream(StreamIndividualRemediesRequest) returns (stream IndividualRemedy);
 
   rpc Create(CreateIndividualRemedyRequest) returns (CreateIndividualRemedyResponse);

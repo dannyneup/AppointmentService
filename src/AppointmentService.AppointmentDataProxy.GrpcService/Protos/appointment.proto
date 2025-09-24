@@ -82,12 +82,6 @@ message GetAppointmentRequest {
   optional AppointmentExpansions expansions = 2;
 }
 
-message ListAppointmentsRequest {
-  optional AppointmentFilter filter = 1;
-  optional AppointmentExpansions expansions = 2;
-  optional int32 page_size = 3;
-  optional string page_token = 4;
-}
 message StreamAppointmentsRequest {
   optional AppointmentFilter filter = 1;
   optional AppointmentExpansions expansions = 2;
@@ -98,10 +92,6 @@ message UpdateAppointmentRequest { AppointmentSummary appointment = 1; }
 message DeleteAppointmentRequest { int32 id = 1; }
 
 message GetAppointmentResponse { Appointment appointment = 1;}
-message ListAppointmentsResponse {
-  repeated Appointment appointments = 1;
-  string next_page_token = 2;
-}
 
 message CreateAppointmentResponse {}
 message UpdateAppointmentResponse {}
@@ -109,7 +99,6 @@ message DeleteAppointmentResponse {}
 
 service AppointmentService {
   rpc Get(GetAppointmentRequest) returns (GetAppointmentResponse);
-  rpc List(ListAppointmentsRequest) returns (ListAppointmentsResponse);
   rpc Stream(StreamAppointmentsRequest) returns (stream Appointment);
 
   rpc Create(CreateAppointmentRequest) returns (CreateAppointmentResponse);
