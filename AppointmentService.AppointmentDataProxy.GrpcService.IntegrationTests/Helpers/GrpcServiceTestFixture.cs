@@ -78,11 +78,9 @@ public class GrpcServiceTestFixture<TProgram> : IDisposable, IAsyncLifetime wher
     {
         CentralDatabaseContainer = new PostgreSqlBuilder()
             .WithImage("postgres:17.6")
-            .WithPortBinding(33070, 5432)
             .Build();
         CompanyDatabaseContainer = new PostgreSqlBuilder()
             .WithImage("postgres:17.6")
-            .WithPortBinding(33071, 5432)
             .Build();
 
         await CentralDatabaseContainer.StartAsync();
