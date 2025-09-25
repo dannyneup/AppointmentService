@@ -1,4 +1,5 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Therapist;
 
-internal sealed class TherapistGrpcService(ITherapistRepository repository, IOptions<StreamingSettings> streamingSettings)
+internal sealed class TherapistGrpcService(IRepository<Protos.Therapist, int, TherapistFilter> repository, IOptions<StreamingSettings> streamingSettings)
     : TherapistService.TherapistServiceBase
 {
     public override async Task<CreateTherapistResponse> Create(CreateTherapistRequest request, ServerCallContext context)

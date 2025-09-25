@@ -1,4 +1,5 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Practice;
 
-internal sealed class PracticeGrpcService(IPracticeRepository repository, IOptions<StreamingSettings> streamingSettings)
+internal sealed class PracticeGrpcService(IRepository<Protos.Practice, string, PracticeFilter> repository, IOptions<StreamingSettings> streamingSettings)
     : PracticeService.PracticeServiceBase
 {
     public override async Task<CreatePracticeResponse> Create(CreatePracticeRequest request, ServerCallContext context)

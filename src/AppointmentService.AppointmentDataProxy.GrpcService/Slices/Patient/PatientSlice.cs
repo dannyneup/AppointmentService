@@ -1,10 +1,13 @@
+using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Patient;
 
 internal static partial class PatientSlice
 {
     public static IServiceCollection AddPatientSlice(this IServiceCollection services)
         => services
-            .AddScoped<IPatientRepository, PatientRepository>();
+            .AddScoped<IRepository<Protos.Patient, string, PatientFilter>, PatientRepository>();
 
     public static void MapPatientSlice(this WebApplication app)
         => app.MapGrpcService<PatientGrpcService>();
