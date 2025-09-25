@@ -1,6 +1,6 @@
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Net.Client;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -15,24 +15,47 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
     private GrpcChannel? _channel;
 
     protected readonly GrpcServiceTestFixture<Program> Fixture;
+    private readonly Action<IWebHostBuilder> _hostConfiguration;
 
     protected IntegrationTestBase(GrpcServiceTestFixture<Program> serviceTestFixture, ITestOutputHelper outputHelper)
     {
         Context = serviceTestFixture.GetTestContext(outputHelper);
         Fixture = serviceTestFixture;
-        serviceTestFixture.ConfigureWebHost(host =>
+        _hostConfiguration = host =>
         {
-            host.ConfigureServices(services =>
-            {
-                services.Replace(new ServiceDescriptor(typeof(IOptions<ConnectionStringsSettings>),
-                    Options.Create(new ConnectionStringsSettings
-                    {
-                        CentralDatabase = serviceTestFixture.CentralDatabaseContainer.GetConnectionString(),
-                        CompanyDatabase = serviceTestFixture.CompanyDatabaseContainer.GetConnectionString()
-                    })));
-            });
+            ReplaceOption(new ConnectionStringsSettings
+                {
+                    CentralDatabase = serviceTestFixture.CentralDatabaseContainer.GetConnectionString(),
+                    CompanyDatabase = serviceTestFixture.CompanyDatabaseContainer.GetConnectionString()
+                })
+                .Invoke(host);
+            ReplaceOption(
+                    new StreamingSettings { BatchSize = 10 }
+                )
+                .Invoke(host);
+        };
+        serviceTestFixture.ConfigureWebHost(_hostConfiguration);
+    }
+
+    protected void AddAdditionalHostConfiguration(Action<IWebHostBuilder> additionalHostConfiguration)
+    {
+        Fixture.ConfigureWebHost(host =>
+        {
+            _hostConfiguration(host);
+            additionalHostConfiguration(host);
         });
     }
+
+    protected Action<IWebHostBuilder> ReplaceOption<TOption>(TOption setting) where TOption : class
+        => host
+            => host.ConfigureServices(services
+                => services.Replace(
+                    new ServiceDescriptor(
+                        typeof(IOptions<TOption>),
+                        Options.Create(setting)
+                    )
+                )
+            );
 
     protected GrpcChannel Channel => _channel ??= CreateChannel();
 

@@ -1,6 +1,7 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers;
 using AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers.Filters;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
 using Xunit.Abstractions;
 
@@ -162,6 +163,31 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
             var streamedPatients = await ReadPatientStreamAsync(client, new PatientFilter{Age = filter});
             var expectedPatients = expected ? [patient] : new List<Patient>();
             Assert.Equivalent(streamedPatients, expectedPatients);
+        }
+
+        [Fact]
+        public async Task Stream_WhenPatientCountExceedsBatchSize_ShouldStreamAllPatients()
+        {
+            AddAdditionalHostConfiguration(
+                ReplaceOption(
+                    new StreamingSettings { BatchSize = 5 }
+                )
+            );
+
+            var client = new PatientService.PatientServiceClient(Channel);
+
+            var patients = Enumerable
+                .Range(0, 10)
+                .Select(iterator
+                    => new Patient
+                        { InsuranceNumber = iterator.ToString() }
+                );
+
+            foreach (var patient in patients)
+                await client.CreateAsync(new CreatePatientRequest { Patient = patient });
+
+            var streamedPatients = await ReadPatientStreamAsync(client);
+            Assert.Equivalent(streamedPatients, patients);
         }
 
         private static async Task<IReadOnlyCollection<Patient>> ReadPatientStreamAsync(PatientService.PatientServiceClient client, PatientFilter? filter = null)
