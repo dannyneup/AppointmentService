@@ -1,4 +1,5 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared;
@@ -6,15 +7,21 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSettings(this IServiceCollection services)
-    => services.AddOptions<ConnectionStringsSettings>()
-        .BindConfiguration(ConnectionStringsSettings.SectionName)
-        .ValidateDataAnnotations()
-        .ValidateOnStart()
-        .Services;
+        => services
+            .AddSettingsOptions<ConnectionStringsSettings>()
+            .AddSettingsOptions<StreamingSettings>();
 
     public static IServiceCollection AddShared(this IServiceCollection services)
         => services
             .AddScoped<ISqlFilterBuilder, SqlFilterBuilder>()
             .AddScoped<IIntFilterOptionsMapper<Int32Filter>, IntFilterOptionsMapper>()
             .AddScoped<IStringFilterOptionsMapper<StringFilter>, StringFilterOptionsMapper>();
+
+    private static IServiceCollection AddSettingsOptions<TSettings>(this IServiceCollection services)
+        where TSettings : class, ISettings
+        => services.AddOptions<TSettings>()
+            .BindConfiguration(TSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart()
+            .Services;
 }

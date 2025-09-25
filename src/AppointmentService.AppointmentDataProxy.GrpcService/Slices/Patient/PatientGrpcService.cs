@@ -1,6 +1,8 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
+using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Patient;
 
@@ -47,7 +49,7 @@ internal sealed class PatientGrpcService(IPatientRepository repository, IOptions
         IServerStreamWriter<Protos.Patient> responseStream,
         ServerCallContext context)
     {
-        await foreach (var patient in repository.StreamAllAsync(500, request.Filter, context.CancellationToken))
+        await foreach (var patient in repository.StreamAllAsync(streamingSettings.Value.BatchSize, request.Filter, context.CancellationToken))
             await responseStream.WriteAsync(patient);
     }
 }

@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 
-internal class ConnectionStringsSettings
+internal sealed class ConnectionStringsSettings : ISettings
 {
-    internal static string SectionName = "ConnectionStrings";
+    public static string SectionName => "ConnectionStrings";
 
     [Required(AllowEmptyStrings = false)]
     internal string CentralDatabase { get; init; }
 
     [Required(AllowEmptyStrings = false)]
     internal string CompanyDatabase { get; init; }
+
 }
