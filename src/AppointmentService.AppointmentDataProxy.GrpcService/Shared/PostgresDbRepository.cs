@@ -174,7 +174,7 @@ internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRe
         {
             parameters.Add(filterParameter.Key, filterParameter.Value);
         }
-        parameters.Add("@After", after, DbType.String);
+        parameters.Add("@After", after, KeyColumnDatabaseType);
         parameters.Add("@Cutoff", cutoff);
         parameters.Add("@Limit", limit);
 
