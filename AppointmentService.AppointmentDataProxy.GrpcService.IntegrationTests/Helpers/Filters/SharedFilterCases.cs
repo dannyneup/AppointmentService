@@ -22,7 +22,7 @@ public static class SharedFilterCases
 
         { new StringFilter { Contains = "foo" }, "foo", true },
         { new StringFilter { Contains = "foo" }, "bar", false },
-        { new StringFilter { Contains = "foo" }, "prefix-foo-suffix", true },
+        { new StringFilter { Contains = "foo" }, "prefoosuf", true },
         { new StringFilter { Contains = "foo" }, "fo", false },
 
         { new StringFilter { StartsWith = "foo" }, "foo", true },
