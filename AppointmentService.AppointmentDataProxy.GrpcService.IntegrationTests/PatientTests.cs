@@ -170,7 +170,7 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
         {
             AddAdditionalHostConfiguration(
                 ReplaceOption(
-                    new StreamingSettings { BatchSize = 5 }
+                    new StreamingSettings { BatchSize = 3 }
                 )
             );
 
