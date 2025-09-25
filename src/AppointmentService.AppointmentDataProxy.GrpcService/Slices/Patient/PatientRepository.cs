@@ -3,6 +3,7 @@ using System.Data;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Dapper;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,7 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Patient;
 
 internal interface IPatientRepository
 {
-    Task<Protos.Patient?> GetAsync(string insuranceNumber, CancellationToken cancellationToken);
+    Task<GetResult<Protos.Patient>> GetAsync(string insuranceNumber, CancellationToken cancellationToken);
     Task<CreateResult> CreateAsync(Protos.Patient patient, CancellationToken cancellationToken);
     Task<UpdateResult> UpdateAsync(Protos.Patient patient, CancellationToken cancellationToken);
     Task<DeleteResult> DeleteAsync(string insuranceNumber, CancellationToken cancellationToken);
@@ -30,7 +31,7 @@ internal class PatientRepository(
 {
     private readonly string _connectionString = connectionStringsSettings.Value.CentralDatabase;
 
-    public async Task<Protos.Patient?> GetAsync(string insuranceNumber, CancellationToken cancellationToken)
+    public async Task<GetResult<Protos.Patient>> GetAsync(string insuranceNumber, CancellationToken cancellationToken)
     {
         const string sql = """
                            select insurance_number as InsuranceNumber, name as Name, age as Age 
@@ -40,7 +41,9 @@ internal class PatientRepository(
         var command = new CommandDefinition(sql, new { insuranceNumber }, cancellationToken: cancellationToken);
         await using var connection = new NpgsqlConnection(_connectionString);
         var row = await connection.QuerySingleOrDefaultAsync<PatientRow>(command);
-        return row?.ToPatient();
+        return row is null
+            ? new GetResult<Protos.Patient>.NotFound()
+            : new GetResult<Protos.Patient>.Success(row.ToPatient());
     }
 
     public async Task<CreateResult> CreateAsync(Protos.Patient patient, CancellationToken cancellationToken)
@@ -82,7 +85,7 @@ internal class PatientRepository(
     public async Task<DeleteResult> DeleteAsync(string insuranceNumber, CancellationToken cancellationToken)
     {
         const string sql = "delete from Patient where insurance_number = @insuranceNumber";
-        var command = new CommandDefinition(sql, insuranceNumber, cancellationToken: cancellationToken);
+        var command = new CommandDefinition(sql, new { insuranceNumber }, cancellationToken: cancellationToken);
         await using var connection = new NpgsqlConnection(_connectionString);
         var effectedRows = await connection.ExecuteAsync(command);
         return effectedRows != 1

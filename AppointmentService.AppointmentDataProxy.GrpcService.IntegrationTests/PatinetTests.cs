@@ -98,8 +98,8 @@ public class PatientTests(GrpcServiceTestFixture<Program> serviceTestFixture, IT
 
             var patient = new Patient
             {
-                Age = 324,
                 InsuranceNumber = "123",
+                Age = 324,
                 Name = "John Doe"
             };
 

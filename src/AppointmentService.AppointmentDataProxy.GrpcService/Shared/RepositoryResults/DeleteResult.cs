@@ -1,6 +1,6 @@
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
 
-internal record DeleteResult
+internal abstract record DeleteResult
 {
     public sealed record Success : DeleteResult;
     public sealed record NotFound : DeleteResult;
