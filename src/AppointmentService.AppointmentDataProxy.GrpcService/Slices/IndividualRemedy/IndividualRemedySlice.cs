@@ -1,9 +1,9 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.IndividualRemedy;
 
-internal static partial class IndividualRemedySlice
+internal static class IndividualRemedySlice
 {
     public static IServiceCollection AddIndividualRemedySlice(this IServiceCollection services)
         => services

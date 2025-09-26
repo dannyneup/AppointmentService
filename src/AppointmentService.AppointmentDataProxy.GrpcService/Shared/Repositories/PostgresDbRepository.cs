@@ -1,24 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Data;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Dapper;
 using Npgsql;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared;
-
-internal interface IRepository<TEntity, in TIdentifier, in TFilter> where TEntity : class
-{
-    Task<GetResult<TEntity>> GetAsync(TIdentifier identifier, CancellationToken cancellationToken);
-    Task<CreateResult> CreateAsync(TEntity entityToCreate, CancellationToken cancellationToken);
-    Task<UpdateResult> UpdateAsync(TEntity entityToUpdate, CancellationToken cancellationToken);
-    Task<DeleteResult> DeleteAsync(TIdentifier identifier, CancellationToken cancellationToken);
-
-    IAsyncEnumerable<TEntity> StreamAllAsync(
-        int batchSize,
-        TFilter filter,
-        CancellationToken cancellationToken);
-}
 
 internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRepository<TEntity, TKey, TFilter> where TEntity : class
 {

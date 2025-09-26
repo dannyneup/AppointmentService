@@ -1,4 +1,3 @@
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Microsoft.Extensions.Options;
 

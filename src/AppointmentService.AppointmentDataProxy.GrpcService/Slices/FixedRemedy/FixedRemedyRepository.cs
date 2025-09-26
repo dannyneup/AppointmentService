@@ -3,7 +3,6 @@ using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
-using AppointmentService.AppointmentDataProxy.GrpcService.Slices.Therapist;
 using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.FixedRemedy;
