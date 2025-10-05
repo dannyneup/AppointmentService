@@ -1,6 +1,7 @@
 using System.Data;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Microsoft.Extensions.Options;
@@ -9,7 +10,7 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.FixedRemedy
 
 internal class FixedRemedyRepository(
     IOptions<ConnectionStringsSettings> connectionStringsSettings,
-    IStringFilterOptionsMapper<StringFilter> stringFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter> stringFilterOptionsMapper,
     ISqlFilterBuilder sqlFilterBuilder) : PostgresDbRepository<Protos.FixedRemedy, FixedRemedyRow, string, FixedRemedyFilter>(sqlFilterBuilder)
 {
     protected override string ConnectionString => connectionStringsSettings.Value.CentralDatabase;

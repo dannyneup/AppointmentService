@@ -25,6 +25,13 @@ internal class SqlFilterBuilder : ISqlFilterBuilder
         int? Min = null,
         int? Max = null) : IFilterOptions;
 
+    public sealed record TimestampFilterOptions(
+        DateTimeOffset? IsEqual,
+        IReadOnlyList<DateTimeOffset>? In,
+        IReadOnlyList<DateTimeOffset>? NotIn,
+        DateTimeOffset? Before,
+        DateTimeOffset? After) :  IFilterOptions;
+
     public sealed record FilterMapping(
         string ColumnName,
         IFilterOptions FilterOptions
@@ -41,10 +48,13 @@ internal class SqlFilterBuilder : ISqlFilterBuilder
             switch (filterMapping.FilterOptions)
             {
                 case StringFilterOptions stringFilterOptions:
-                    AppendStringOps(ref where, parameters, filterMapping.ColumnName, stringFilterOptions);
+                    AppendStringOptions(ref where, parameters, filterMapping.ColumnName, stringFilterOptions);
                     break;
                 case IntFilterOptions intFilterOptions:
-                    AppendInt32Ops(ref where, parameters, filterMapping.ColumnName, intFilterOptions);
+                    AppendInt32Options(ref where, parameters, filterMapping.ColumnName, intFilterOptions);
+                    break;
+                case TimestampFilterOptions timestampFilterOptions:
+                    AppendTimestampFilterOptions(ref where, parameters, filterMapping.ColumnName, timestampFilterOptions);
                     break;
             }
         }
@@ -52,7 +62,7 @@ internal class SqlFilterBuilder : ISqlFilterBuilder
         return (where, parameters);
     }
 
-    private static void AppendStringOps(
+    private static void AppendStringOptions(
         ref string where,
         Dictionary<string, object?> parameters,
         string column,
@@ -124,39 +134,76 @@ internal class SqlFilterBuilder : ISqlFilterBuilder
         string ColumnExpression(string c) => caseInsensitive ? $"lower({c})" : c;
     }
 
-    private static void AppendInt32Ops(ref string where,
+    private static void AppendInt32Options(ref string where,
         Dictionary<string, object?> parameters,
         string column,
         IntFilterOptions filter)
     {
         if (filter.IsEqual.HasValue)
         {
-            where += $" and {column} = @{column}_eq";
+            where += $" and \"{column}\" = @{column}_eq";
             parameters[$"{column}_eq"] = filter.IsEqual.Value;
         }
 
         if (filter.In is { Count: > 0 })
         {
-            where += $" and {column} = any(@{column}_in)";
+            where += $" and \"{column}\" = any(@{column}_in)";
             parameters[$"{column}_in"] = filter.In.ToArray();
         }
 
         if (filter.NotIn is { Count: > 0 })
         {
-            where += $" and not ({column} = any(@{column}_notin))";
+            where += $" and not (\"{column}\" = any(@{column}_notin))";
             parameters[$"{column}_notin"] = filter.NotIn.ToArray();
         }
 
         if (filter.Min.HasValue)
         {
-            where += $" and {column} >= @{column}_min";
+            where += $" and \"{column}\" >= @{column}_min";
             parameters[$"{column}_min"] = filter.Min.Value;
         }
 
         if (filter.Max.HasValue)
         {
-            where += $" and {column} <= @{column}_max";
+            where += $" and \"{column}\" <= @{column}_max";
             parameters[$"{column}_max"] = filter.Max.Value;
+        }
+    }
+
+    private void AppendTimestampFilterOptions(
+        ref string where,
+        Dictionary<string, object?> parameters,
+        string column,
+        TimestampFilterOptions filter)
+    {
+        if (filter.IsEqual.HasValue)
+        {
+            where += $" and \"{column}\" = @{column}_eq";
+            parameters[$"{column}_eq"] = filter.IsEqual.Value;
+        }
+
+        if (filter.In is { Count: > 0 })
+        {
+            where += $" and \"{column}\" = any(@{column}_in)";
+            parameters[$"{column}_in"] = filter.In.ToArray();
+        }
+
+        if (filter.NotIn is { Count: > 0 })
+        {
+            where += $" and not (\"{column}\" = any(@{column}_notin))";
+            parameters[$"{column}_notin"] = filter.NotIn.ToArray();
+        }
+
+        if (filter.After.HasValue)
+        {
+            where += $" and \"{column}\" > @{column}_min";
+            parameters[$"{column}_min"] = filter.After.Value;
+        }
+
+        if (filter.Before.HasValue)
+        {
+            where += $" and \"{column}\" < @{column}_max";
+            parameters[$"{column}_max"] = filter.Before.Value;
         }
     }
 }

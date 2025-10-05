@@ -1,6 +1,7 @@
 using System.Data;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Microsoft.Extensions.Options;
@@ -9,8 +10,8 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.IndividualR
 
 internal class IndividualRemedyRepository(
     IOptions<ConnectionStringsSettings> connectionStringsSettings,
-    IIntFilterOptionsMapper<Int32Filter> intFilterOptionsMapper,
-    IStringFilterOptionsMapper<StringFilter> stringFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.IntFilterOptions, Int32Filter> intFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter> stringFilterOptionsMapper,
     ISqlFilterBuilder sqlFilterBuilder) : PostgresDbRepository<Protos.IndividualRemedy, IndividualRemedyRow, int, IndividualRemedyFilter>(sqlFilterBuilder)
 {
     private const string IdColumnName = "id";

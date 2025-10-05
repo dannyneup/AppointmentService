@@ -1,4 +1,4 @@
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 

@@ -2,12 +2,7 @@ using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 
-internal interface IStringFilterOptionsMapper<TTransport>
-{
-    SqlFilterBuilder.StringFilterOptions? Map(TTransport? source);
-}
-
-internal class StringFilterOptionsMapper : IStringFilterOptionsMapper<StringFilter>
+internal class StringFilterOptionsMapper : IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter>
 {
     public SqlFilterBuilder.StringFilterOptions? Map(StringFilter? source)
         => source is null

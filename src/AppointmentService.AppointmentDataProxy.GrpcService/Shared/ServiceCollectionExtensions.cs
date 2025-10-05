@@ -14,8 +14,9 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddShared(this IServiceCollection services)
         => services
             .AddScoped<ISqlFilterBuilder, SqlFilterBuilder>()
-            .AddScoped<IIntFilterOptionsMapper<Int32Filter>, IntFilterOptionsMapper>()
-            .AddScoped<IStringFilterOptionsMapper<StringFilter>, StringFilterOptionsMapper>();
+            .AddScoped<IFilterOptionsMapper<SqlFilterBuilder.IntFilterOptions, Int32Filter>, IntFilterOptionsMapper>()
+            .AddScoped<IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter>, StringFilterOptionsMapper>()
+            .AddScoped<IFilterOptionsMapper<SqlFilterBuilder.TimestampFilterOptions, GoogleTimestampFilter>, TimestampFilterOptionsMapper>();
 
     private static IServiceCollection AddSettingsOptions<TSettings>(this IServiceCollection services)
         where TSettings : class, ISettings

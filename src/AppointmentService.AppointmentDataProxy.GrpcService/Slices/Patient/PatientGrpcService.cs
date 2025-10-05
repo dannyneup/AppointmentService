@@ -1,6 +1,6 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
 using Microsoft.Extensions.Options;

@@ -1,4 +1,5 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using Google.Protobuf.WellKnownTypes;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers.Filters;
 
@@ -76,5 +77,68 @@ public static class SharedFilterCases
         { new Int32Filter { Min = 5, Max = 20 }, 10, true },
         { new Int32Filter { Min = 5, Max = 20 }, 20, true },
         { new Int32Filter { Min = 5, Max = 20 }, 21, false }
+    };
+
+    public static readonly TheoryData<GoogleTimestampFilter, Timestamp, bool> TimestampCases = new()
+    {
+        { new GoogleTimestampFilter { Equals_ = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)) },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter { Equals_ = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)) },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 1), DateTimeKind.Utc)), false },
+
+        { new GoogleTimestampFilter {
+                In = {
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+                } },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter {
+                In = {
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+                } },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 3, 0, 0, 0), DateTimeKind.Utc)), false },
+
+        { new GoogleTimestampFilter {
+                NotIn = {
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+                } },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 3, 0, 0, 0), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter {
+                NotIn = {
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                    Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+                } },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)), false },
+
+        { new GoogleTimestampFilter {
+                Before = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 23, 59, 59), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter {
+                Before = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc)), false },
+
+        { new GoogleTimestampFilter {
+                After = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 1), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter {
+                After = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc)), false },
+
+        { new GoogleTimestampFilter {
+                After = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                Before = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 3, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 2, 0, 0, 0), DateTimeKind.Utc)), true },
+        { new GoogleTimestampFilter {
+                After = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 1, 0, 0, 0), DateTimeKind.Utc)),
+                Before = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 3, 0, 0, 0), DateTimeKind.Utc))
+            },
+          Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2025, 1, 4, 0, 0, 0), DateTimeKind.Utc)), false }
     };
 }

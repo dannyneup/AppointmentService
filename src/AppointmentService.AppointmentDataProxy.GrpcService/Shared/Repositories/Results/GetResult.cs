@@ -1,4 +1,4 @@
-namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 
 internal abstract record GetResult<TEntity>
 {

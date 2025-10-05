@@ -1,6 +1,7 @@
 using System.Data;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Microsoft.Extensions.Options;
@@ -9,7 +10,7 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Practice;
 
 internal class PracticeRepository(
     IOptions<ConnectionStringsSettings> connectionStringsSettings,
-    IStringFilterOptionsMapper<StringFilter> stringFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter> stringFilterOptionsMapper,
     ISqlFilterBuilder sqlFilterBuilder) : PostgresDbRepository<Protos.Practice, PracticeRow, string, PracticeFilter>(sqlFilterBuilder)
 {
     private const string InstitutionCodeColumnName = "institution_code";

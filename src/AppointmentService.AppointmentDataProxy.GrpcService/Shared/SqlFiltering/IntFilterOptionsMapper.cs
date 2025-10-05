@@ -2,12 +2,7 @@ using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 
-internal interface IIntFilterOptionsMapper<TTransport>
-{
-    SqlFilterBuilder.IntFilterOptions? Map(TTransport? source);
-}
-
-internal class IntFilterOptionsMapper : IIntFilterOptionsMapper<Int32Filter>
+internal class IntFilterOptionsMapper : IFilterOptionsMapper<SqlFilterBuilder.IntFilterOptions, Int32Filter>
 {
     public SqlFilterBuilder.IntFilterOptions? Map(Int32Filter? source)
         => source is null

@@ -1,6 +1,6 @@
 using System.Data;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Microsoft.Extensions.Options;
@@ -9,8 +9,8 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Patient;
 
 internal class PatientRepository(
     IOptions<ConnectionStringsSettings> connectionStringsSettings,
-    IIntFilterOptionsMapper<Int32Filter> intFilterOptionsMapper,
-    IStringFilterOptionsMapper<StringFilter> stringFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.IntFilterOptions, Int32Filter> intFilterOptionsMapper,
+    IFilterOptionsMapper<SqlFilterBuilder.StringFilterOptions, StringFilter> stringFilterOptionsMapper,
     ISqlFilterBuilder sqlFilterBuilder) : PostgresDbRepository<Protos.Patient, PatientRow, string, PatientFilter>(sqlFilterBuilder)
 {
     private const string InsuranceNumberColumnName = "insurance_number";

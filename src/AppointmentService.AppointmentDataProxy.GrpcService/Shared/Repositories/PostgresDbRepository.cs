@@ -1,12 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Data;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.SqlFiltering;
 using Dapper;
 using Npgsql;
 
-namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+namespace AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 
 internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRepository<TEntity, TKey, TFilter> where TEntity : class
 {
@@ -68,16 +67,29 @@ internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRe
         {
             return new CreateResult.AlreadyExists();
         }
+        catch (PostgresException postgresException) when (postgresException.SqlState is Constants
+                                                              .PostgresExceptionSqlStates.ForeignKeyViolation)
+        {
+            return new CreateResult.ReferenceViolation();
+        }
     }
 
     public async Task<UpdateResult> UpdateAsync(TEntity entityToUpdate, CancellationToken cancellationToken)
     {
         var command = new CommandDefinition(_updateStatement, ToRow(entityToUpdate), cancellationToken: cancellationToken);
         await using var connection = new NpgsqlConnection(ConnectionString);
-        var effectedRows = await connection.ExecuteAsync(command);
-        return effectedRows != 1
-            ? new UpdateResult.NotFound()
-            : new UpdateResult.Success();
+        try
+        {
+            var effectedRows = await connection.ExecuteAsync(command);
+            return effectedRows != 1
+                ? new UpdateResult.NotFound()
+                : new UpdateResult.Success();
+        }
+        catch (PostgresException postgresException) when (postgresException.SqlState is Constants
+                                                              .PostgresExceptionSqlStates.ForeignKeyViolation)
+        {
+            return new UpdateResult.ReferenceViolation();
+        }
     }
 
     public async Task<DeleteResult> DeleteAsync(TKey identifier, CancellationToken cancellationToken)
@@ -105,17 +117,17 @@ internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRe
         var columnPropertyMappings = string.Join(
             ", ",
             ColumnMappings.Select(mapping
-                => $"{mapping.ColumnName} as {mapping.PropertyName}"
+                => $"\"{mapping.ColumnName}\" as \"{mapping.PropertyName}\""
             )
         );
-        return $"select {columnPropertyMappings} from {TableName}";
+        return $"select {columnPropertyMappings} from \"{TableName}\"";
     }
 
     private string BuildInsert()
     {
-        var columns = string.Join(", ", ColumnMappings.Select(mapping => mapping.ColumnName));
+        var columns = string.Join(", ", ColumnMappings.Select(mapping => $"\"{mapping.ColumnName}\""));
         var properties = string.Join(", ", ColumnMappings.Select(mapping => $"@{mapping.PropertyName}"));
-        return $"insert into {TableName} ({columns}) values ({properties});";
+        return $"insert into \"{TableName}\" ({columns}) values ({properties});";
     }
 
     private string BuildUpdate()
@@ -123,7 +135,7 @@ internal abstract class PostgresDbRepository<TEntity, TRow, TKey, TFilter> : IRe
         var keyColumnMapping = ColumnMappings.Single(mapping => mapping.ColumnName == KeyColumnName);
         var noKeyColumnMappings = ColumnMappings.Except([keyColumnMapping]);
         var columnPropertyMappings =
-            string.Join(", ", noKeyColumnMappings.Select(mapping => $"{mapping.ColumnName} = @{mapping.PropertyName}"));
+            string.Join(", ", noKeyColumnMappings.Select(mapping => $"\"{mapping.ColumnName}\" = @{mapping.PropertyName}"));
         return $"update {TableName} set {columnPropertyMappings} where {KeyColumnName} = @{keyColumnMapping.PropertyName}";
     }
 

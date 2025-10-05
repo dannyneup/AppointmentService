@@ -1,6 +1,6 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
-using AppointmentService.AppointmentDataProxy.GrpcService.Shared.RepositoryResults;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
 using Microsoft.Extensions.Options;
@@ -24,7 +24,7 @@ internal sealed class FixedRemedyGrpcService(IRepository<Protos.FixedRemedy, str
         return result switch
         {
             GetResult<Protos.FixedRemedy>.NotFound => throw new RpcException(new Status(StatusCode.NotFound,
-                "FixedRemedy not found")),
+                "Fixed remedy not found")),
             GetResult<Protos.FixedRemedy>.Success success => new GetFixedRemedyResponse { FixedRemedy = success.Entity },
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -50,7 +50,7 @@ internal sealed class FixedRemedyGrpcService(IRepository<Protos.FixedRemedy, str
         IServerStreamWriter<Protos.FixedRemedy> responseStream,
         ServerCallContext context)
     {
-        await foreach (var therapist in repository.StreamAllAsync(streamingSettings.Value.BatchSize, request.Filter, context.CancellationToken))
-            await responseStream.WriteAsync(therapist);
+        await foreach (var fixedRemedy in repository.StreamAllAsync(streamingSettings.Value.BatchSize, request.Filter, context.CancellationToken))
+            await responseStream.WriteAsync(fixedRemedy);
     }
 }
