@@ -9,12 +9,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentService.Appointm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests", "AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests\AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.csproj", "{76D1FC02-FA3A-45D2-8FC2-249FF07C52D5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "src\build\_build.csproj", "{13EF2C1F-534A-43E7-8F00-2E7F3776B6ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13EF2C1F-534A-43E7-8F00-2E7F3776B6ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13EF2C1F-534A-43E7-8F00-2E7F3776B6ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CF37DCA-D2E7-46E1-ACAA-7EF2648FF6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
