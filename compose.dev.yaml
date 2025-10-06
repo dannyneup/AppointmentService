@@ -1,0 +1,69 @@
+services:
+  central-database:
+    image: 'postgres:17.6'
+    env_file:
+      - central-db.env
+    volumes:
+      - './platform/database/central/init.sql:/docker-entrypoint-initdb.d/init.sql:ro'
+      - './data/database/central/data/data/:/var/lib/postgresql/data/:rw'
+    networks:
+      - database
+
+  company-database:
+    image: 'postgres:17.6'
+    env_file:
+      - company-db.env
+    volumes:
+      - './platform/database/company/init.sql:/docker-entrypoint-initdb.d/init.sql:ro'
+      - './data/database/company/data/data/:/var/lib/postgresql/data/:rw'
+    networks:
+      - database
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    env_file:
+      - keycloak.env
+    networks:
+      - proxy
+      - backend
+    volumes:
+      - './platform/keycloak/data/import:/opt/keycloak/data/import:ro'
+    command: start-dev --import-realm --proxy-headers xforwarded
+    labels:
+      traefik.enable: true
+      traefik.http.routers.keycloak.rule: Host(`auth.neukoch.com`)
+      traefik.http.services.keycloak.loadbalancer.server.port: 8080
+
+  data-proxy:
+    image: ghcr.io/dannyneup/appointmentservice.appointmentdataproxy.grpcservice:dev
+    env_file:
+      - data-proxy.env
+    networks:
+      - database
+      - proxy
+      - backend
+    labels:
+      traefik.enable: true
+      traefik.http.routers.data-proxy.rule: Host(`data-proxy.neukoch.com`)
+      traefik.http.services.data-proxy.loadbalancer.server.port: 8080
+      traefik.http.services.data-proxy.loadbalancer.server.scheme: h2c
+
+  traefik:
+    container_name: traefik
+    image: traefik:3.3.4
+    restart: unless-stopped
+    env_file:
+      - traefik.env
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './data/traefik/certs:/etc/traefik/certs/:rw'
+    networks:
+      - proxy
+
+networks:
+  database:
+  proxy:
+  backend:

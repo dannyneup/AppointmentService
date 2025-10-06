@@ -23,13 +23,13 @@ services:
     ports:
       - '5433:5432'
 
-  identity-provider:
+  keycloak:
     image: quay.io/keycloak/keycloak:26.4
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
-      - './platform/identity-provider/data/import:/opt/keycloak/data/import:ro'
+      - './platform/keycloak/data/import:/opt/keycloak/data/import:ro'
     command: start-dev --import-realm
     ports:
       - '8080:8080'
