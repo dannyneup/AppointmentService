@@ -7,9 +7,9 @@ internal sealed class ConnectionStringsSettings : ISettings
     public static string SectionName => "ConnectionStrings";
 
     [Required(AllowEmptyStrings = false)]
-    internal string CentralDatabase { get; init; }
+    public string CentralDatabase { get; init; }
 
     [Required(AllowEmptyStrings = false)]
-    internal string CompanyDatabase { get; init; }
+    public string CompanyDatabase { get; init; }
 
 }

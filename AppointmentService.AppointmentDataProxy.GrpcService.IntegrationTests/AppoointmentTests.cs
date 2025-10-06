@@ -8,12 +8,16 @@ using Xunit.Abstractions;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests;
 
-public class AppointmentTests : IntegrationTestBase
-    {
-        private readonly Protos.AppointmentService.AppointmentServiceClient _appointmentServiceClient;
-        private readonly TherapistService.TherapistServiceClient _therapistServiceClient;
-        private readonly IndividualRemedyService.IndividualRemedyServiceClient _individualRemedyServiceClient;
-        private readonly FixedRemedyService.FixedRemedyServiceClient _fixedRemedyServiceClient;
+public class AppointmentTests(
+    GrpcServiceTestFixture<Program> serviceTestFixture,
+    KeycloakTestFixture keycloakTestFixture,
+    ITestOutputHelper outputHelper)
+    : IntegrationTestBase(serviceTestFixture, keycloakTestFixture, outputHelper)
+{
+        private Protos.AppointmentService.AppointmentServiceClient AppointmentServiceClient => new(Channel);
+        private TherapistService.TherapistServiceClient TherapistServiceClient => new(Channel);
+        private IndividualRemedyService.IndividualRemedyServiceClient IndividualRemedyServiceClient => new(Channel);
+        private FixedRemedyService.FixedRemedyServiceClient FixedRemedyServiceClient => new(Channel);
 
         private readonly Therapist _testTherapist = new()
         {
@@ -33,14 +37,6 @@ public class AppointmentTests : IntegrationTestBase
             Name = "some fixed Remedy"
         };
 
-        public AppointmentTests(GrpcServiceTestFixture<Program> serviceTestFixture, ITestOutputHelper outputHelper) : base(serviceTestFixture, outputHelper)
-        {
-            _appointmentServiceClient = new Protos.AppointmentService.AppointmentServiceClient(Channel);
-            _therapistServiceClient = new TherapistService.TherapistServiceClient(Channel);
-            _individualRemedyServiceClient = new IndividualRemedyService.IndividualRemedyServiceClient(Channel);
-            _fixedRemedyServiceClient = new FixedRemedyService.FixedRemedyServiceClient(Channel);
-        }
-
         [Fact]
         public async Task Stream_WhenReferenceEntitiesAndAppointmentCreated_ShouldReturnAppointment()
         {
@@ -57,11 +53,11 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest
             {
                 Appointment = appointment
             });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient);
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient);
             Assert.Single(streamedAppointments, appointment);
         }
 
@@ -91,12 +87,12 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest
             {
                 Appointment = appointment
             });
-            await _appointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest { Appointment = updatedAppointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient);
+            await AppointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest { Appointment = updatedAppointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient);
             Assert.Single(streamedAppointments, updatedAppointment);
         }
 
@@ -126,13 +122,13 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest
             {
                 Appointment = appointment
             });
             await CreateTestFixedRemedy();
-            await _appointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest { Appointment = updatedAppointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient);
+            await AppointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest { Appointment = updatedAppointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient);
             Assert.Single(streamedAppointments, updatedAppointment);
         }
 
@@ -152,9 +148,9 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
 
-            var result = await _appointmentServiceClient.GetAsync(new GetAppointmentRequest { Id = appointment.Id });
+            var result = await AppointmentServiceClient.GetAsync(new GetAppointmentRequest { Id = appointment.Id });
 
             Assert.Equivalent(result.Appointment, appointment);
         }
@@ -177,7 +173,7 @@ public class AppointmentTests : IntegrationTestBase
             await CreateTestFixedRemedy();
 
             var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment }));
+                await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment }));
 
             Assert.Equivalent(StatusCode.FailedPrecondition, exception.StatusCode);
         }
@@ -200,7 +196,7 @@ public class AppointmentTests : IntegrationTestBase
             await CreateTestIndividualRemedy();
 
             var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment }));
+                await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment }));
 
             Assert.Equivalent(StatusCode.FailedPrecondition, exception.StatusCode);
         }
@@ -232,10 +228,10 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestFixedRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment });
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment });
 
             var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await _appointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest{ Appointment = updatedAppointment }));
+                await AppointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest{ Appointment = updatedAppointment }));
 
             Assert.Equivalent(StatusCode.FailedPrecondition, exception.StatusCode);
         }
@@ -267,10 +263,10 @@ public class AppointmentTests : IntegrationTestBase
 
             await CreateTestTherapist();
             await CreateTestFixedRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment });
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest{ Appointment = appointment });
 
             var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await _appointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest{ Appointment = updatedAppointment }));
+                await AppointmentServiceClient.UpdateAsync(new UpdateAppointmentRequest{ Appointment = updatedAppointment }));
 
             Assert.Equivalent(StatusCode.FailedPrecondition, exception.StatusCode);
         }
@@ -365,8 +361,8 @@ public class AppointmentTests : IntegrationTestBase
             };
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient, new AppointmentFilter{Start = filter});
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient, new AppointmentFilter{Start = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
             Assert.Equivalent(streamedAppointments, expectedAppointments);
         }
@@ -387,8 +383,8 @@ public class AppointmentTests : IntegrationTestBase
             };
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient, new AppointmentFilter{End = filter});
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient, new AppointmentFilter{End = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
             Assert.Equivalent(streamedAppointments, expectedAppointments);
         }
@@ -409,8 +405,8 @@ public class AppointmentTests : IntegrationTestBase
             };
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient, new AppointmentFilter{PatientInsuranceNumber = filter});
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient, new AppointmentFilter{PatientInsuranceNumber = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
             Assert.Equivalent(streamedAppointments, expectedAppointments);
         }
@@ -434,10 +430,10 @@ public class AppointmentTests : IntegrationTestBase
                 Id = therapistId,
                 Name = "John Doe"
             };
-            await _therapistServiceClient.CreateAsync(new CreateTherapistRequest{Therapist = therapist});
+            await TherapistServiceClient.CreateAsync(new CreateTherapistRequest{Therapist = therapist});
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient, new AppointmentFilter{TherapistId = filter});
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient, new AppointmentFilter{TherapistId = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
             Assert.Equivalent(streamedAppointments, expectedAppointments);
         }
@@ -458,8 +454,8 @@ public class AppointmentTests : IntegrationTestBase
             };
             await CreateTestTherapist();
             await CreateTestIndividualRemedy();
-            await _appointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
-            var streamedAppointments = await ReadAppointmentStreamAsync(_appointmentServiceClient, new AppointmentFilter{PracticeInstitutionCode = filter});
+            await AppointmentServiceClient.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
+            var streamedAppointments = await ReadAppointmentStreamAsync(AppointmentServiceClient, new AppointmentFilter{PracticeInstitutionCode = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
             Assert.Equivalent(streamedAppointments, expectedAppointments);
         }
@@ -486,7 +482,7 @@ public class AppointmentTests : IntegrationTestBase
                 Name = "some fixed remedy"
             };
             await CreateTestTherapist();
-            await _fixedRemedyServiceClient.CreateAsync(new  CreateFixedRemedyRequest{FixedRemedy = fixedRemedy});
+            await FixedRemedyServiceClient.CreateAsync(new  CreateFixedRemedyRequest{FixedRemedy = fixedRemedy});
             await client.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
             var streamedAppointments = await ReadAppointmentStreamAsync(client, new AppointmentFilter{FixedRemedyDiagnosisCode = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
@@ -515,7 +511,7 @@ public class AppointmentTests : IntegrationTestBase
                 Name = "some individual Remedy"
             };
             await CreateTestTherapist();
-            await _individualRemedyServiceClient.CreateAsync(new CreateIndividualRemedyRequest { IndividualRemedy = individualRemedy });
+            await IndividualRemedyServiceClient.CreateAsync(new CreateIndividualRemedyRequest { IndividualRemedy = individualRemedy });
             await client.CreateAsync(new CreateAppointmentRequest { Appointment = appointment });
             var streamedAppointments = await ReadAppointmentStreamAsync(client, new AppointmentFilter{IndividualRemedyId = filter});
             var expectedAppointments = expected ? [appointment] : new List<Appointment>();
@@ -573,19 +569,19 @@ public class AppointmentTests : IntegrationTestBase
         }
 
         private Task CreateTestTherapist()
-            => _therapistServiceClient.CreateAsync(new CreateTherapistRequest
+            => TherapistServiceClient.CreateAsync(new CreateTherapistRequest
             {
                 Therapist = _testTherapist
             }).ResponseAsync;
 
         private Task CreateTestIndividualRemedy()
-            => _individualRemedyServiceClient.CreateAsync(new CreateIndividualRemedyRequest
+            => IndividualRemedyServiceClient.CreateAsync(new CreateIndividualRemedyRequest
             {
                 IndividualRemedy = _testIndividualRemedy
             }).ResponseAsync;
 
         private Task CreateTestFixedRemedy()
-            => _fixedRemedyServiceClient.CreateAsync(new CreateFixedRemedyRequest
+            => FixedRemedyServiceClient.CreateAsync(new CreateFixedRemedyRequest
             {
                 FixedRemedy = _testFixedRemedy
             }).ResponseAsync;

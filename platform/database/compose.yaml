@@ -2,11 +2,9 @@ services:
   central-database:
     image: 'postgres:17.6'
     volumes:
-      - './central/data/data/:/var/lib/postgresql/data/:rw'
       - './central/init.sql:/docker-entrypoint-initdb.d/init.sql:ro'
 
   company-database:
     image: 'postgres:17.6'
     volumes:
-      - './company/data/data/:/var/lib/postgresql/data/:rw'
       - './company/init.sql:/docker-entrypoint-initdb.d/init.sql:ro'

@@ -1,6 +1,10 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
+using Grpc.Core;
+using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -9,39 +13,36 @@ using Xunit.Abstractions;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers;
 
-public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture<Program>>, IAsyncLifetime
+public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture<Program>>,
+    IClassFixture<KeycloakTestFixture>,
+    IAsyncLifetime
 {
     internal readonly GrpcTestContext<Program> Context;
     private GrpcChannel? _channel;
+    private string _authorizedBearerToken;
 
-    protected readonly GrpcServiceTestFixture<Program> Fixture;
-    private readonly Action<IWebHostBuilder> _hostConfiguration;
+    protected readonly GrpcServiceTestFixture<Program> ServiceFixture;
+    protected readonly KeycloakTestFixture KeycloakFixture;
 
-    protected IntegrationTestBase(GrpcServiceTestFixture<Program> serviceTestFixture, ITestOutputHelper outputHelper)
+    private Action<IWebHostBuilder>? _hostConfiguration;
+
+    private const string TestClientId = "test-client";
+    private const string TestClientSecret = "dummy-test-secret";
+
+    protected IntegrationTestBase(GrpcServiceTestFixture<Program> serviceTestFixture,
+        KeycloakTestFixture keycloakTestFixture,
+        ITestOutputHelper outputHelper)
     {
         Context = serviceTestFixture.GetTestContext(outputHelper);
-        Fixture = serviceTestFixture;
-        _hostConfiguration = host =>
-        {
-            ReplaceOption(new ConnectionStringsSettings
-                {
-                    CentralDatabase = serviceTestFixture.CentralDatabaseContainer.GetConnectionString(),
-                    CompanyDatabase = serviceTestFixture.CompanyDatabaseContainer.GetConnectionString()
-                })
-                .Invoke(host);
-            ReplaceOption(
-                    new StreamingSettings { BatchSize = 10 }
-                )
-                .Invoke(host);
-        };
-        serviceTestFixture.ConfigureWebHost(_hostConfiguration);
+        ServiceFixture = serviceTestFixture;
+        KeycloakFixture = keycloakTestFixture;
     }
 
     protected void AddAdditionalHostConfiguration(Action<IWebHostBuilder> additionalHostConfiguration)
     {
-        Fixture.ConfigureWebHost(host =>
+        ServiceFixture.ConfigureWebHost(host =>
         {
-            _hostConfiguration(host);
+            _hostConfiguration?.Invoke(host);
             additionalHostConfiguration(host);
         });
     }
@@ -59,19 +60,40 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
 
     protected GrpcChannel Channel => _channel ??= CreateChannel();
 
-    private GrpcChannel CreateChannel() =>
-        GrpcChannel.ForAddress("http://localhost", new GrpcChannelOptions
+    private GrpcChannel CreateChannel()
+    {
+        var credentials = CallCredentials.FromInterceptor((_, metadata) =>
         {
-            LoggerFactory = Fixture.LoggerFactory,
-            HttpHandler = Fixture.Handler
+            metadata.Add("authorization", $"Bearer {_authorizedBearerToken}");
+            return Task.CompletedTask;
         });
+        var channel = GrpcChannel.ForAddress("http://localhost",
+            new GrpcChannelOptions
+            {
+                LoggerFactory = ServiceFixture.LoggerFactory,
+                HttpHandler = ServiceFixture.Handler,
+                Credentials = ChannelCredentials.Create(ChannelCredentials.Insecure, credentials),
+                UnsafeUseInsecureChannelCallCredentials = true
+            });
+        return channel;
+    }
 
 
-    public Task InitializeAsync()
-        => Task.WhenAll(
-            ApplyInitScript(Fixture.CentralDatabaseContainer.GetConnectionString(), "central.sql"),
-            ApplyInitScript(Fixture.CompanyDatabaseContainer.GetConnectionString(), "company.sql")
+    public async Task InitializeAsync()
+    {
+        _authorizedBearerToken =
+            await KeycloakFixture.GetClientCredentialsTokenAsync(
+                TestClientId,
+                TestClientSecret,
+                CancellationToken.None);
+
+        await Task.WhenAll(
+            ApplyInitScript(ServiceFixture.CentralDatabaseContainer.GetConnectionString(), "central.sql"),
+            ApplyInitScript(ServiceFixture.CompanyDatabaseContainer.GetConnectionString(), "company.sql")
         );
+        _hostConfiguration = await CreatHostConfigurationAsync();
+        ServiceFixture.ConfigureWebHost(_hostConfiguration);
+    }
 
     public async Task DisposeAsync()
     {
@@ -85,10 +107,10 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
         }
     }
 
-    private Task ResetDatabases()
-        => Task.WhenAll(
-            DropDatabaseSchema(Fixture.CompanyDatabaseContainer.GetConnectionString()),
-            DropDatabaseSchema(Fixture.CentralDatabaseContainer.GetConnectionString())
+    private Task ResetDatabases() =>
+        Task.WhenAll(
+            DropDatabaseSchema(ServiceFixture.CompanyDatabaseContainer.GetConnectionString()),
+            DropDatabaseSchema(ServiceFixture.CentralDatabaseContainer.GetConnectionString())
         );
 
     private static async Task ApplyInitScript(string connectionString, string scriptPath)
@@ -122,5 +144,33 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
         command.CommandText = dropTablesQuery;
         await command.ExecuteNonQueryAsync();
         await Task.CompletedTask;
+    }
+
+    private async Task<Action<IWebHostBuilder>> CreatHostConfigurationAsync()
+    {
+        var keycloakAuthority = await KeycloakFixture.GetAuthorityAsync();
+        return host =>
+        {
+            host.ConfigureAppConfiguration(configure => configure.AddInMemoryCollection(
+                [
+                    new(
+                        $"{AuthenticationSettings.SectionName}:{nameof(AuthenticationSettings.Authority)}",
+                        keycloakAuthority),
+                    new(
+                        $"{AuthenticationSettings.SectionName}:{nameof(AuthenticationSettings.Audience)}",
+                        KeycloakFixture.Audience)
+                ]
+            ));
+            ReplaceOption(new ConnectionStringsSettings
+                {
+                    CentralDatabase = ServiceFixture.CentralDatabaseContainer.GetConnectionString(),
+                    CompanyDatabase = ServiceFixture.CompanyDatabaseContainer.GetConnectionString()
+                })
+                .Invoke(host);
+            ReplaceOption(
+                    new StreamingSettings { BatchSize = 10 }
+                )
+                .Invoke(host);
+        };
     }
 }

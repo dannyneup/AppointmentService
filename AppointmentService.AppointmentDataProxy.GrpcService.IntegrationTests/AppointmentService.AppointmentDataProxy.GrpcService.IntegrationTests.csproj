@@ -34,6 +34,10 @@
             <Link>central.sql</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <Content Include="..\platform\identity-provider\data\import\realm-export.json">
+            <Link>realm-export.json</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

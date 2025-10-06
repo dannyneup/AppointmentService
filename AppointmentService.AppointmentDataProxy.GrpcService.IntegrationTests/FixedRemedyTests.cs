@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests;
 
-public class FixedRemedyTests(GrpcServiceTestFixture<Program> serviceTestFixture, ITestOutputHelper outputHelper) : IntegrationTestBase(serviceTestFixture, outputHelper)
+public class FixedRemedyTests(GrpcServiceTestFixture<Program> serviceTestFixture, KeycloakTestFixture keycloakTestFixture, ITestOutputHelper outputHelper) : IntegrationTestBase(serviceTestFixture, keycloakTestFixture, outputHelper)
     {
         [Fact]
         public async Task Stream_WhenFixedRemedyCreated_ShouldReturnFixedRemedy()

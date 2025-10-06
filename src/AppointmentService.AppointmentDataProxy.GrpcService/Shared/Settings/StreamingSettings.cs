@@ -7,6 +7,6 @@ internal sealed class StreamingSettings : ISettings
     public static string SectionName => "StreamingSettings";
 
     [Required(AllowEmptyStrings = false)]
-    internal int BatchSize { get; init; }
+    public int BatchSize { get; init; }
 
 }

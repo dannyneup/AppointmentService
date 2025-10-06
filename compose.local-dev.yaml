@@ -6,6 +6,8 @@ services:
     environment:
       POSTGRES_PASSWORD: superSecurePassword
       POSTGRES_USER: postgres
+    volumes:
+      - './local-dev/database/central/data/data/:/var/lib/postgresql/data/:rw'
     ports:
       - '5432:5432'
 
@@ -16,5 +18,18 @@ services:
     environment:
       POSTGRES_PASSWORD: superSecurePassword
       POSTGRES_USER: postgres
+    volumes:
+      - './local-dev/database/company/data/data/:/var/lib/postgresql/data/:rw'
     ports:
       - '5433:5432'
+
+  identity-provider:
+    image: quay.io/keycloak/keycloak:26.4
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - './platform/identity-provider/data/import:/opt/keycloak/data/import:ro'
+    command: start-dev --import-realm
+    ports:
+      - '8080:8080'

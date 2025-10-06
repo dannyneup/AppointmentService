@@ -9,7 +9,8 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddSettings(this IServiceCollection services)
         => services
             .AddSettingsOptions<ConnectionStringsSettings>()
-            .AddSettingsOptions<StreamingSettings>();
+            .AddSettingsOptions<StreamingSettings>()
+            .AddSettingsOptions<AuthenticationSettings>();
 
     public static IServiceCollection AddShared(this IServiceCollection services)
         => services
