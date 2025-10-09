@@ -1,12 +1,15 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.Appointment;
 
+[Authorize(Constants.Authorization.Policies.IsCustomer)]
 internal sealed class AppointmentGrpcService(
     IRepository<Protos.Appointment, int, AppointmentFilter> appointmentRepository,
     IRepository<Protos.Therapist, int, TherapistFilter> therapistRepository,

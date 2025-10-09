@@ -1,4 +1,5 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Authorization;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using AppointmentService.AppointmentDataProxy.GrpcService.Slices.Appointment;
 using AppointmentService.AppointmentDataProxy.GrpcService.Slices.FixedRemedy;
@@ -38,7 +39,14 @@ services
         };
         options.RequireHttpsMetadata = false;
     });
-services.AddAuthorization(options => options.FallbackPolicy = options.DefaultPolicy);
+services.AddAuthorization(options =>
+{
+    options.AddPolicy(Constants.Authorization.Policies.IsGeneral,
+        policy => policy.RequireScope(Constants.Authorization.Scopes.General));
+    options.AddPolicy(Constants.Authorization.Policies.IsCustomer,
+        policy => policy.RequireScope(Constants.Authorization.Scopes.Customer));
+    options.FallbackPolicy = options.GetPolicy(Constants.Authorization.Policies.IsCustomer);
+});
 services.AddGrpcReflection();
 
 services.AddShared();

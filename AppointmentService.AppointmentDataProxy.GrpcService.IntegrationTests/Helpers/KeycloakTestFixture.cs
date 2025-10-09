@@ -7,8 +7,8 @@ namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.H
 
 public class KeycloakTestFixture : IAsyncLifetime
 {
-    public string Realm { get; } = "appointment-data";
-    public string Audience => "appointment-data-proxy-grpc-service";
+    public string Realm => "appointment-data";
+    public string Audience => "api:appointment-data/grpc-service";
 
     private IContainer _container = null!;
     private bool _initialized;
@@ -58,8 +58,9 @@ public class KeycloakTestFixture : IAsyncLifetime
             ["client_id"] = clientId,
             ["client_secret"] = clientSecret
         };
-        if (scopes is not null)
-            form["scope"] = string.Join(' ', scopes);
+        var enumeratedScopes = scopes as string[] ?? [];
+        if (enumeratedScopes.Any())
+            form["scope"] = string.Join(' ', enumeratedScopes);
 
         var authority = await GetAuthorityAsync();
         var response = await client.PostAsync($"{authority}/protocol/openid-connect/token", new FormUrlEncodedContent(form), cancellationToken);

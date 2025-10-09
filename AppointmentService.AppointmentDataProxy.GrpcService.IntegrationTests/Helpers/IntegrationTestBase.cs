@@ -17,6 +17,9 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
     IClassFixture<KeycloakTestFixture>,
     IAsyncLifetime
 {
+    protected abstract string[] TokenScopes { get; }
+    protected virtual bool CreateAuthenticatedChannel => true;
+
     internal readonly GrpcTestContext<Program> Context;
     private GrpcChannel? _channel;
     private string _authorizedBearerToken;
@@ -29,7 +32,8 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
     private const string TestClientId = "test-client";
     private const string TestClientSecret = "dummy-test-secret";
 
-    protected IntegrationTestBase(GrpcServiceTestFixture<Program> serviceTestFixture,
+    protected IntegrationTestBase(
+        GrpcServiceTestFixture<Program> serviceTestFixture,
         KeycloakTestFixture keycloakTestFixture,
         ITestOutputHelper outputHelper)
     {
@@ -72,12 +76,13 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
             {
                 LoggerFactory = ServiceFixture.LoggerFactory,
                 HttpHandler = ServiceFixture.Handler,
-                Credentials = ChannelCredentials.Create(ChannelCredentials.Insecure, credentials),
+                Credentials = CreateAuthenticatedChannel
+                    ? ChannelCredentials.Create(ChannelCredentials.Insecure, credentials)
+                    : null,
                 UnsafeUseInsecureChannelCallCredentials = true
             });
         return channel;
     }
-
 
     public async Task InitializeAsync()
     {
@@ -85,7 +90,8 @@ public abstract class IntegrationTestBase : IClassFixture<GrpcServiceTestFixture
             await KeycloakFixture.GetClientCredentialsTokenAsync(
                 TestClientId,
                 TestClientSecret,
-                CancellationToken.None);
+                CancellationToken.None,
+                TokenScopes);
 
         await Task.WhenAll(
             ApplyInitScript(ServiceFixture.CentralDatabaseContainer.GetConnectionString(), "central.sql"),

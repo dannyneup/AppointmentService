@@ -3,10 +3,12 @@ using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Repositories.Results;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.Slices.FixedRemedy;
 
+[AllowAnonymous]
 internal sealed class FixedRemedyGrpcService(IRepository<Protos.FixedRemedy, string, FixedRemedyFilter> repository, IOptions<StreamingSettings> streamingSettings)
     : FixedRemedyService.FixedRemedyServiceBase
 {

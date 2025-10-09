@@ -7,8 +7,8 @@ internal sealed class AuthenticationSettings : ISettings
     public static string SectionName => "Authentication";
 
     [Required(AllowEmptyStrings = false)]
-    public string Authority { get; init; }
+    public required string Authority { get; init; }
 
     [Required(AllowEmptyStrings = false)]
-    public string Audience { get; init; }
+    public required string Audience { get; init; }
 }

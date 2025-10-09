@@ -7,177 +7,191 @@ using Xunit.Abstractions;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests;
 
-public class FixedRemedyTests(GrpcServiceTestFixture<Program> serviceTestFixture, KeycloakTestFixture keycloakTestFixture, ITestOutputHelper outputHelper) : IntegrationTestBase(serviceTestFixture, keycloakTestFixture, outputHelper)
+public class FixedRemedyTests(
+    GrpcServiceTestFixture<Program> serviceTestFixture,
+    KeycloakTestFixture keycloakTestFixture,
+    ITestOutputHelper outputHelper) : IntegrationTestBase(serviceTestFixture, keycloakTestFixture, outputHelper)
+{
+    protected override bool CreateAuthenticatedChannel => false;
+    protected override string[] TokenScopes => [];
+
+    [Fact]
+    public async Task Stream_WhenFixedRemedyCreated_ShouldReturnFixedRemedy()
     {
-        [Fact]
-        public async Task Stream_WhenFixedRemedyCreated_ShouldReturnFixedRemedy()
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var fixedRemedy = new FixedRemedy
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+            DiagnosisCode = "456",
+            Name = "John Doe",
+        };
 
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = "456",
-                Name = "John Doe",
-            };
-
-            await client.CreateAsync(new CreateFixedRemedyRequest
-            {
-                FixedRemedy = fixedRemedy
-            });
-            var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
-            Assert.Single(streamedFixedRemedies, fixedRemedy);
-        }
-
-        [Fact]
-        public async Task Stream_WhenFixedRemedyCreatedAndUpdated_ShouldContainUpdatedFixedRemedy()
+        await client.CreateAsync(new CreateFixedRemedyRequest
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = "456",
-                Name = "John Doe",
-            };
-            var updatedFixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = fixedRemedy.DiagnosisCode,
-                Name = "Sir John Doe"
-            };
+            FixedRemedy = fixedRemedy
+        });
+        var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
+        Assert.Single(streamedFixedRemedies, fixedRemedy);
+    }
 
-            await client.CreateAsync(new CreateFixedRemedyRequest
-            {
-                FixedRemedy = fixedRemedy
-            });
-            await client.UpdateAsync(new UpdateFixedRemedyRequest { FixedRemedy = updatedFixedRemedy });
-            var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
-            Assert.Single(streamedFixedRemedies, updatedFixedRemedy);
-        }
-
-        [Fact]
-        public async Task Get_WhenFixedRemedyCreated_ShouldReturnFixedRemedy()
+    [Fact]
+    public async Task Stream_WhenFixedRemedyCreatedAndUpdated_ShouldContainUpdatedFixedRemedy()
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+        var fixedRemedy = new FixedRemedy
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
-
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = "123",
-                Name = "John Doe"
-            };
-
-            await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
-
-            var result = await client.GetAsync(new GetFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode });
-
-            Assert.Equivalent(result.FixedRemedy, fixedRemedy);
-        }
-
-        [Fact]
-        public async Task Update_WhenFixedRemedyDoesNotExists_ShouldThrowNotFound()
+            DiagnosisCode = "456",
+            Name = "John Doe",
+        };
+        var updatedFixedRemedy = new FixedRemedy
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+            DiagnosisCode = fixedRemedy.DiagnosisCode,
+            Name = "Sir John Doe"
+        };
 
-            var notExisting = new FixedRemedy
-            {
-                DiagnosisCode = "123",
-                Name = "Nobody",
-            };
-
-            var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await client.UpdateAsync(new UpdateFixedRemedyRequest { FixedRemedy = notExisting }));
-
-            Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
-        }
-
-        [Fact]
-        public async Task Update_WhenFixedRemedyDeleted_ShouldReturnNotFound()
+        await client.CreateAsync(new CreateFixedRemedyRequest
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+            FixedRemedy = fixedRemedy
+        });
+        await client.UpdateAsync(new UpdateFixedRemedyRequest { FixedRemedy = updatedFixedRemedy });
+        var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
+        Assert.Single(streamedFixedRemedies, updatedFixedRemedy);
+    }
 
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = "123",
-                Name = "John Doe"
-            };
+    [Fact]
+    public async Task Get_WhenFixedRemedyCreated_ShouldReturnFixedRemedy()
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
 
-            await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
-
-            await client.DeleteAsync(new DeleteFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode });
-
-            var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-                await client.GetAsync(new GetFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode }));
-
-            Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
-        }
-
-        [Theory]
-        [MemberData(nameof(SharedFilterCases.StringCases), MemberType = typeof(SharedFilterCases))]
-        public async Task Stream_WhenFilteredByDiagnosisCode_ShouldReturnFilteredFixedRemedies(StringFilter filter, string diagnosisCode, bool expected)
+        var fixedRemedy = new FixedRemedy
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+            DiagnosisCode = "123",
+            Name = "John Doe"
+        };
 
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = diagnosisCode,
-                Name = "John Doe"
-            };
-            await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
-            var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client, new FixedRemedyFilter{DiagnosisCode = filter});
-            var expectedFixedRemedies = expected ? [fixedRemedy] : new List<FixedRemedy>();
-            Assert.Equivalent(streamedFixedRemedies, expectedFixedRemedies);
-        }
+        await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
 
-        [Theory]
-        [MemberData(nameof(SharedFilterCases.StringCases), MemberType = typeof(SharedFilterCases))]
-        public async Task Stream_WhenFilteredByName_ShouldReturnFilteredFixedRemedies(StringFilter filter, string name, bool expected)
+        var result = await client.GetAsync(new GetFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode });
+
+        Assert.Equivalent(result.FixedRemedy, fixedRemedy);
+    }
+
+    [Fact]
+    public async Task Update_WhenFixedRemedyDoesNotExists_ShouldThrowNotFound()
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var notExisting = new FixedRemedy
         {
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+            DiagnosisCode = "123",
+            Name = "Nobody",
+        };
 
-            var fixedRemedy = new FixedRemedy
-            {
-                DiagnosisCode = "123",
-                Name = name
-            };
-            await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
-            var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client, new FixedRemedyFilter{Name = filter});
-            var expectedFixedRemedies = expected ? [fixedRemedy] : new List<FixedRemedy>();
-            Assert.Equivalent(streamedFixedRemedies, expectedFixedRemedies);
-        }
+        var exception = await Assert.ThrowsAsync<RpcException>(async () =>
+            await client.UpdateAsync(new UpdateFixedRemedyRequest { FixedRemedy = notExisting }));
 
-        [Fact]
-        public async Task Stream_WhenFixedRemedyCountExceedsBatchSize_ShouldStreamAllFixedRemedies()
+        Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
+    }
+
+    [Fact]
+    public async Task Update_WhenFixedRemedyDeleted_ShouldReturnNotFound()
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var fixedRemedy = new FixedRemedy
         {
-            AddAdditionalHostConfiguration(
-                ReplaceOption(
-                    new StreamingSettings { BatchSize = 3 }
-                )
+            DiagnosisCode = "123",
+            Name = "John Doe"
+        };
+
+        await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
+
+        await client.DeleteAsync(new DeleteFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode });
+
+        var exception = await Assert.ThrowsAsync<RpcException>(async () =>
+            await client.GetAsync(new GetFixedRemedyRequest { DiagnosisCode = fixedRemedy.DiagnosisCode }));
+
+        Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(SharedFilterCases.StringCases), MemberType = typeof(SharedFilterCases))]
+    public async Task Stream_WhenFilteredByDiagnosisCode_ShouldReturnFilteredFixedRemedies(StringFilter filter,
+        string diagnosisCode,
+        bool expected)
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var fixedRemedy = new FixedRemedy
+        {
+            DiagnosisCode = diagnosisCode,
+            Name = "John Doe"
+        };
+        await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
+        var streamedFixedRemedies =
+            await ReadFixedRemedyStreamAsync(client, new FixedRemedyFilter { DiagnosisCode = filter });
+        var expectedFixedRemedies = expected ? [fixedRemedy] : new List<FixedRemedy>();
+        Assert.Equivalent(streamedFixedRemedies, expectedFixedRemedies);
+    }
+
+    [Theory]
+    [MemberData(nameof(SharedFilterCases.StringCases), MemberType = typeof(SharedFilterCases))]
+    public async Task Stream_WhenFilteredByName_ShouldReturnFilteredFixedRemedies(StringFilter filter,
+        string name,
+        bool expected)
+    {
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var fixedRemedy = new FixedRemedy
+        {
+            DiagnosisCode = "123",
+            Name = name
+        };
+        await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
+        var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client, new FixedRemedyFilter { Name = filter });
+        var expectedFixedRemedies = expected ? [fixedRemedy] : new List<FixedRemedy>();
+        Assert.Equivalent(streamedFixedRemedies, expectedFixedRemedies);
+    }
+
+    [Fact]
+    public async Task Stream_WhenFixedRemedyCountExceedsBatchSize_ShouldStreamAllFixedRemedies()
+    {
+        AddAdditionalHostConfiguration(
+            ReplaceOption(
+                new StreamingSettings { BatchSize = 3 }
+            )
+        );
+
+        var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+
+        var fixedRemedies = Enumerable
+            .Range(0, 10)
+            .Select(iterator
+                => new FixedRemedy { DiagnosisCode = iterator.ToString() }
             );
 
-            var client = new FixedRemedyService.FixedRemedyServiceClient(Channel);
+        foreach (var fixedRemedy in fixedRemedies)
+            await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
 
-            var fixedRemedies = Enumerable
-                .Range(0, 10)
-                .Select(iterator
-                    => new FixedRemedy { DiagnosisCode = iterator.ToString() }
-                );
-
-            foreach (var fixedRemedy in fixedRemedies)
-                await client.CreateAsync(new CreateFixedRemedyRequest { FixedRemedy = fixedRemedy });
-
-            var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
-            Assert.Equivalent(streamedFixedRemedies, fixedRemedies);
-        }
-
-        private static async Task<IReadOnlyCollection<FixedRemedy>> ReadFixedRemedyStreamAsync(FixedRemedyService.FixedRemedyServiceClient client, FixedRemedyFilter? filter = null)
-        {
-            var request = new StreamFixedRemediesRequest
-            {
-                Filter = filter
-            };
-            using var streamCall = client.Stream(request);
-            var streamedFixedRemedies = new List<FixedRemedy>();
-            await foreach (var streamedFixedRemedy in streamCall.ResponseStream.ReadAllAsync())
-            {
-                streamedFixedRemedies.Add(streamedFixedRemedy);
-            }
-            return streamedFixedRemedies;
-        }
+        var streamedFixedRemedies = await ReadFixedRemedyStreamAsync(client);
+        Assert.Equivalent(streamedFixedRemedies, fixedRemedies);
     }
+
+    private static async Task<IReadOnlyCollection<FixedRemedy>> ReadFixedRemedyStreamAsync(
+        FixedRemedyService.FixedRemedyServiceClient client,
+        FixedRemedyFilter? filter = null)
+    {
+        var request = new StreamFixedRemediesRequest
+        {
+            Filter = filter
+        };
+        using var streamCall = client.Stream(request);
+        var streamedFixedRemedies = new List<FixedRemedy>();
+        await foreach (var streamedFixedRemedy in streamCall.ResponseStream.ReadAllAsync())
+        {
+            streamedFixedRemedies.Add(streamedFixedRemedy);
+        }
+
+        return streamedFixedRemedies;
+    }
+}

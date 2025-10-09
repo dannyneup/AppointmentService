@@ -1,15 +1,21 @@
 using AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers;
 using AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests.Helpers.Filters;
 using AppointmentService.AppointmentDataProxy.GrpcService.Protos;
+using AppointmentService.AppointmentDataProxy.GrpcService.Shared;
 using AppointmentService.AppointmentDataProxy.GrpcService.Shared.Settings;
 using Grpc.Core;
 using Xunit.Abstractions;
 
 namespace AppointmentService.AppointmentDataProxy.GrpcService.IntegrationTests;
 
-public class IndividualRemedyTests(GrpcServiceTestFixture<Program> serviceTestFixture, KeycloakTestFixture keycloakTestFixture, ITestOutputHelper outputHelper)
+public class IndividualRemedyTests(
+    GrpcServiceTestFixture<Program> serviceTestFixture,
+    KeycloakTestFixture keycloakTestFixture,
+    ITestOutputHelper outputHelper)
     : IntegrationTestBase(serviceTestFixture, keycloakTestFixture, outputHelper)
 {
+    protected override string[] TokenScopes => [ Constants.Authorization.Scopes.Customer ];
+
     [Fact]
     public async Task Stream_WhenIndividualRemedyCreated_ShouldReturnIndividualRemedy()
     {
