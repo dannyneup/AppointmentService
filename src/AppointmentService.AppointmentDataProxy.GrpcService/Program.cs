@@ -62,10 +62,9 @@ SqlMapper.AddTypeHandler(new UtcDateTimeHandler());
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapGrpcReflectionService();
-}
+app
+    .MapGrpcReflectionService()
+    .AllowAnonymous();
 
 app.UseAuthentication();
 app.UseAuthorization();
